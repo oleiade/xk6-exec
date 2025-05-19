@@ -44,7 +44,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dop251/goja"
+	"github.com/grafana/sobek"
 	"go.k6.io/k6/js/common"
 	"go.k6.io/k6/js/modules"
 	"go.k6.io/k6/metrics"
@@ -78,7 +78,7 @@ func New() *RootModule {
 // NewModuleInstance implements the modules.Module interface and returns
 // a new instance for each VU.
 func (*RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
-	vu.Runtime().SetFieldNameMapper(goja.TagFieldNameMapper("js", true))
+	vu.Runtime().SetFieldNameMapper(sobek.TagFieldNameMapper("js", true))
 
 	return &ModuleInstance{
 		vu:      vu,
@@ -136,7 +136,7 @@ func RegisterCustomMetrics(registry *metrics.Registry) *CustomMetrics {
 }
 
 // NewCmd is the JS constructor for the Cmd object.
-func (mi *ModuleInstance) NewCmd(call goja.ConstructorCall) *goja.Object {
+func (mi *ModuleInstance) NewCmd(call sobek.ConstructorCall) *sobek.Object {
 	rt := mi.vu.Runtime()
 
 	var name string
@@ -181,7 +181,7 @@ func (c Command) Env(key, value string) Command {
 
 // Exec runs the command and returns a promise that will be resolved when the command finishes.
 // FIXME: this is probably very unsafe.
-func (c *Command) Exec() *goja.Promise {
+func (c *Command) Exec() *sobek.Promise {
 	vuContext := c.vu.Context()
 	vuState := c.vu.State()
 
@@ -306,7 +306,7 @@ type CommandResult struct {
 // makeHandledPromise will create a promise and return its resolve and reject methods,
 // wrapped in such a way that it will block the eventloop from exiting before they are
 // called even if the promise isn't resolved by the time the current script ends executing.
-func makeHandledPromise(vu modules.VU) (*goja.Promise, func(interface{}), func(interface{})) {
+func makeHandledPromise(vu modules.VU) (*sobek.Promise, func(interface{}), func(interface{})) {
 	runtime := vu.Runtime()
 	callback := vu.RegisterCallback()
 	p, resolve, reject := runtime.NewPromise()
